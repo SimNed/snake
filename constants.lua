@@ -9,4 +9,6 @@ return {
     CHICK_ID = 1,
     OBSTACLE_ID = 2,
     SNAKE_ID = 3,
+    SNAKE_COLOR = {1,1,1,1},
+    CHICK_COLOR = {1,1,0,1}
 }
