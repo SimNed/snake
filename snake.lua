@@ -29,6 +29,20 @@ local snake = {
         end
     
         grid.matrix[targetPosition.x][targetPosition.y] = grid.cell_id.free
+    end,
+
+    draw = function(self, window_scale)
+        love.graphics.setColor(self.color)
+
+        for i = 1, self.size do
+            love.graphics.rectangle(
+                'fill',
+                self.cell_positions[i].x * window_scale,
+                self.cell_positions[i].y * window_scale,
+                window_scale,
+                window_scale
+            )
+        end
     end
 }
 
