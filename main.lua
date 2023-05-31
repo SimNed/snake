@@ -1,88 +1,56 @@
-local constants = require 'constants'
-local initializers = require 'initializers'
+local _game = require 'game'
 
---- VARIABLES --
-
-local _game = {
-    state = {
-        start_menu = false,
-        game_running = false,
-        game_over = false,
-    }
-}
-
-local _snake = initializers.init_snake(constants.SNAKE_DEFAULT_SIZE, constants.SNAKE_DEFAULT_POSITION, constants.SNAKE_DEFAULT_DIRECTION)
-local _grid = initializers.init_grid(constants.GRID_SIZE, _snake, constants.FREE_ID, constants.SNAKE_ID)
+local _snake = require 'snake'
+local _grid = require 'grid'
 local _chicks = {}
 
-local _direction = constants.SNAKE_DEFAULT_DIRECTION
-local _tempDirection = _direction
-
-local _refreshDelay = constants.DEFAULT_REFRESH_DELAY
-local _timer = 0
-
-local _chicks_score = 0
+local _tempDirection = {}
 
 --- FUNCTIONS ---
-
-function move_snake(position)
-    local tempPosition = {}
-    local targetPosition = position
-
-    _grid[targetPosition.x][targetPosition.y] = constants.SNAKE_ID
-
-    for i = 1, #_snake do
-        tempPosition = _snake[i]    
-        _snake[i] = targetPosition
-        targetPosition = tempPosition
-    end
-
-    _grid[targetPosition.x][targetPosition.y] = constants.FREE_ID
-end
 
 function add_chicks(chicksNumber)
     for i = 1, chicksNumber do
         local chick_position = generate_random_free_position()
         table.insert(_chicks, chick_position)
-        _grid[chick_position.x][chick_position.y] = constants.CHICK_ID
+        _grid.matrix[chick_position.x][chick_position.y] = _grid.cell_id.chick
     end
 end
 
 function generate_random_free_position()
     math.randomseed( os.time() )
 
-    local random_position = { x = math.random(0, #_grid), y = math.random(0, #_grid) }
+    local random_position = { x = math.random(0, _grid.size), y = math.random(0, _grid.size) }
     
-    while _grid[random_position.x][random_position.y] ~= constants.FREE_ID do
-        random_position =  { x = math.random(0, #_grid), y = math.random(0, #_grid) }
+    while _grid.matrix[random_position.x][random_position.y] ~= _grid.cell_id.free do
+        random_position =  { x = math.random(0, _grid.size), y = math.random(0, _grid.size) }
     end
 
     return random_position
 end
 
 function check_next_position_state(position)
-    if position.x < 0 or position.x >= #_grid or position.y < 0 or position.y >= #_grid then
+    if position.x < 0 or position.x >= _grid.size or position.y < 0 or position.y >= _grid.size then
         _game.state.game_running = false
         _game.state.game_over = true
 
-    elseif _grid[position.x][position.y] == constants.FREE_ID then
-        move_snake(position)
+    elseif _grid.matrix[position.x][position.y] == _grid.cell_id.free then
+        _snake:move_snake(_grid, position)
 
-    elseif _grid[position.x][position.y] == constants.SNAKE_ID then
+    elseif _grid.matrix[position.x][position.y] == _grid.cell_id.snake then
         _game.state.game_running = false
         _game.state.game_over = true
 
-    elseif _grid[position.x][position.y] == constants.CHICK_ID then
-        move_snake(position)
+    elseif _grid.matrix[position.x][position.y] == _grid.cell_id.chick then
+        _snake:move_snake(_grid, position)
         add_chicks(1)
         -- TODO delete eaten chick to _chicks array
-        _chicks_score = _chicks_score + 1 
+        _game.chicks_score = _game.chicks_score + 1 
     end
 end
 
 function check_direction_update()
-    if (_direction.x ~= 0 and _tempDirection.x ~= _direction.x * -1) or (_direction.y ~= 0 and _tempDirection.y ~= _direction.y * -1)  then
-        _direction = _tempDirection
+    if (_snake.direction.x ~= 0 and _tempDirection.x ~= _snake.direction.x * -1) or (_snake.direction.y ~= 0 and _tempDirection.y ~= _snake.direction.y * -1)  then
+        _snake.direction = _tempDirection
     end
 end
 
@@ -92,6 +60,12 @@ function love.load()
     _game.state.start_menu = true
     _game.state.game_running = false
     _game.state.game_over = false
+
+    _snake:init_cell_positions(_grid.size)
+    _grid:init_matrix(_snake)
+
+    _tempDirection = _snake.direction
+    
     add_chicks(4)
 end
 
@@ -104,25 +78,25 @@ function love.update(dt)
 
     elseif _game.state.game_running then
         if love.keyboard.isDown("left") then
-            _tempDirection = {x = -1, y = 0}
+            _tempDirection = { x = -1, y = 0 }
 
         elseif love.keyboard.isDown("right") then
-            _tempDirection = {x = 1, y = 0}
+            _tempDirection = { x = 1, y = 0 }
 
         elseif love.keyboard.isDown("up") then
-            _tempDirection = {x = 0, y = -1}
+            _tempDirection = { x = 0, y = -1 }
 
         elseif love.keyboard.isDown("down") then
-            _tempDirection = {x = 0, y = 1}
+            _tempDirection = { x = 0, y = 1 }
         end
 
-        _timer = _timer + dt
+        _game.timer = _game.timer + dt
 
-        if _timer > _refreshDelay then
+        if _game.timer > _game.refresh_delay then
             check_direction_update()
-            check_next_position_state({ x = _snake[1].x + _direction.x, y = _snake[1].y + _direction.y })
+            check_next_position_state({ x = _snake.cell_positions[1].x + _snake.direction.x, y = _snake.cell_positions[1].y + _snake.direction.y })
 
-            _timer = 0
+            _game.timer = 0
         end
     end
 end
@@ -132,28 +106,28 @@ function love.draw()
         love.graphics.print("PRESS SPACE KEY")
 
     elseif _game.state.game_running then
-        love.graphics.setColor(constants.SNAKE_COLOR)
-        love.graphics.print(_chicks_score)
+        love.graphics.setColor(_snake.color)
+        love.graphics.print(_game.chicks_score)
 
-        for i = 1, #_snake do
+        for i = 1, #_snake.cell_positions do
             love.graphics.rectangle(
                 'fill',
-                _snake[i].x * constants.WINDOW_SCALE,
-                _snake[i].y * constants.WINDOW_SCALE,
-                constants.WINDOW_SCALE,
-                constants.WINDOW_SCALE
+                _snake.cell_positions[i].x * _game.window_scale,
+                _snake.cell_positions[i].y * _game.window_scale,
+                _game.window_scale,
+                _game.window_scale
             )
         end
 
-        love.graphics.setColor(constants.CHICK_COLOR)
+        love.graphics.setColor({1,1,0,1})
 
         for i = 1, #_chicks do
             love.graphics.rectangle(
                 'fill',
-                _chicks[i].x * constants.WINDOW_SCALE,
-                _chicks[i].y * constants.WINDOW_SCALE,
-                constants.WINDOW_SCALE,
-                constants.WINDOW_SCALE
+                _chicks[i].x * _game.window_scale,
+                _chicks[i].y * _game.window_scale,
+                _game.window_scale,
+                _game.window_scale
             )
         end
 
