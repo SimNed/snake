@@ -4,9 +4,9 @@ local chicks = {
 
     add_chicks = function(self, grid, chicks_number)
         for i = 1, chicks_number do
-            chick_position = self.generate_random_chick_position(grid)
-            table.insert(self.chicks_positions, chick_position)
-            grid.matrix[chick_position.x][chick_position.y] = grid.cell_id.chick
+            position = self.generate_random_chick_position(grid)
+            table.insert(self.chicks_positions, position)
+            grid.matrix[position.x][position.y] = grid.cell_id.chick
         end
     end,
 
@@ -16,10 +16,18 @@ local chicks = {
         random_position = { x = math.random(0, grid.size - 1), y = math.random(0, grid.size - 1) }
         
         while grid.matrix[random_position.x][random_position.y] ~= grid.cell_id.free do
-            random_position =  { x = math.random(0, grid.size), y = math.random(0, grid.size) }
+            random_position =  { x = math.random(0, grid.size - 1), y = math.random(0, grid.size - 1) }
         end
     
         return random_position
+    end,
+
+    delete_chick = function(self, position)
+        for key, value in pairs(self.chicks_positions) do
+            if value.x == position.x and value.y == position.y then
+                table.remove(self.chicks_positions, key)
+            end
+        end
     end,
 
     draw = function(self, window_scale)

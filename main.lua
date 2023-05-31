@@ -23,6 +23,7 @@ function check_next_position_state(position)
     elseif _grid.matrix[position.x][position.y] == _grid.cell_id.chick then
         _snake:move_snake(_grid, position)
         _chicks:add_chicks(_grid, 1)
+        _chicks:delete_chick(position)
         -- TODO delete eaten chick to _chicks array
         _game.chicks_score = _game.chicks_score + 1 
     end
