@@ -6,7 +6,7 @@ local game = {
     },
     window_scale = 10,
     timer = 0,
-    refresh_delay = .05,
+    refresh_delay = .1,
     chicks_score = 0,
     temp_direction = {},
 
@@ -23,6 +23,9 @@ local game = {
             self.state.game_over = true
     
         elseif grid.matrix[position.x][position.y] == grid.cell_id.chick then
+            if self.refresh_delay > .045 then
+                self:update_refresh_delay()
+            end
             snake:move_snake(grid, position)
             chicks:add_chicks(grid, 1)
             chicks:delete_chick(position)
@@ -36,6 +39,10 @@ local game = {
         end
     end,
 
+    update_refresh_delay = function(self)
+        self.refresh_delay = self.refresh_delay * (0.9)
+    end,
+
     draw_start_menu = function(self)
         love.graphics.setColor({1,1,1,1})
         love.graphics.print("PRESS SPACE KEY")
@@ -44,6 +51,7 @@ local game = {
     draw_score = function(self)
         love.graphics.setColor({1,1,1,1})
         love.graphics.print(self.chicks_score)
+        love.graphics.print(self.refresh_delay, 50, 0)
     end,
 
     draw_game_over_menu = function(self)

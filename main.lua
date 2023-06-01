@@ -9,13 +9,13 @@ local _tempDirection = {}
 -- CORE --
 
 function love.load()
-    _game.state.start_menu = true
+    _game.state.start_menu = true --réfléchir à une fonction pour initialiser les différents états du jeu
     _game.state.game_running = false
     _game.state.game_over = false
 
     _snake:init_cell_positions(_grid.size)
     _grid:init_matrix(_snake)
-    _chicks:add_chicks(_grid, 4)
+    _chicks:add_chicks(_grid, 4) --réfléchir à une fonction init chicks avec un compteur, et enlever le compteur de la fonction add_chicks
 
     _game.temp_direction = _snake.direction
 end
@@ -45,6 +45,7 @@ function love.update(dt)
 
         if _game.timer > _game.refresh_delay then
             local next_position = { x = _snake.cell_positions[1].x + _snake.direction.x, y = _snake.cell_positions[1].y + _snake.direction.y }
+            
             _game:check_direction_update(_snake)
             _game:check_next_position_state(next_position, _grid, _snake, _chicks)
             _game.timer = 0
