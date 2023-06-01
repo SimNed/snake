@@ -6,7 +6,7 @@ local game = {
     },
     window_scale = 10,
     timer = 0,
-    refresh_delay = .1,
+    refresh_delay = .2,
     chicks_score = 0,
     temp_direction = {},
 
@@ -27,6 +27,7 @@ local game = {
                 self:update_refresh_delay()
             end
             snake:move_snake(grid, position)
+            snake:add_cell()
             chicks:add_chicks(grid, 1)
             chicks:delete_chick(position)
             self.chicks_score = self.chicks_score + 1 
@@ -51,7 +52,6 @@ local game = {
     draw_score = function(self)
         love.graphics.setColor({1,1,1,1})
         love.graphics.print(self.chicks_score)
-        love.graphics.print(self.refresh_delay, 50, 0)
     end,
 
     draw_game_over_menu = function(self)
