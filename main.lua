@@ -4,18 +4,16 @@ local _snake = require 'snake'
 local _grid = require 'grid'
 local _chicks = require 'chicks'
 
-local _tempDirection = {}
-
 -- CORE --
 
 function love.load()
-    _game.state.start_menu = true --réfléchir à une fonction pour initialiser les différents états du jeu
+    _game.state.start_menu = true --faire une fonction pour initialiser les différents états du jeu
     _game.state.game_running = false
     _game.state.game_over = false
 
     _snake:init_cell_positions(_grid.size)
     _grid:init_matrix(_snake)
-    _chicks:add_chicks(_grid, 4) --réfléchir à une fonction init chicks avec un compteur, et enlever le compteur de la fonction add_chicks
+    _chicks:add_chicks(_grid, 4) --faire une fonction init chicks avec un compteur, et enlever le compteur de la fonction add_chicks
 
     _game.temp_direction = _snake.direction
 end
