@@ -31,6 +31,11 @@ local snake = {
         grid.matrix[targetPosition.x][targetPosition.y] = grid.cell_id.free
     end,
 
+    add_cell = function(self)
+        self.size = self.size + 1 
+        table.insert(self.cell_positions, self.cell_positions[#self.cell_positions])
+    end,
+
     draw = function(self, window_scale)
         love.graphics.setColor(self.color)
 
